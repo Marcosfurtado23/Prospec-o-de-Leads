@@ -8,9 +8,10 @@ import { Linkedin, Instagram, Facebook, Twitter, MessageCircle, Globe, Mail, Pho
 interface LeadCardProps {
   lead: Lead;
   onAnalyzeLead?: (lead: Lead) => Promise<string>; // Optional prop for custom analysis logic
+  isFreelance?: boolean;
 }
 
-const LeadCard: React.FC<LeadCardProps> = ({ lead, onAnalyzeLead }) => {
+const LeadCard: React.FC<LeadCardProps> = ({ lead, onAnalyzeLead, isFreelance }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [strategy, setStrategy] = useState<string | null>(null);
 
@@ -72,14 +73,16 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, onAnalyzeLead }) => {
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{lead.name}</h3>
-          <p className="text-sm font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider">{lead.industry}</p>
+          <p className="text-sm font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+            {isFreelance ? `Serviço: ${lead.industry}` : lead.industry}
+          </p>
         </div>
         <div className={`px-3 py-1 rounded-full text-xs font-bold ${
           lead.potentialScore > 75 
           ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
           : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
         }`}>
-          Score: {lead.potentialScore}
+          {isFreelance ? 'Match' : 'Score'}: {lead.potentialScore}%
         </div>
       </div>
 
@@ -95,7 +98,7 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, onAnalyzeLead }) => {
         <div className="flex items-center text-slate-500 dark:text-slate-500">
           <Globe className="w-4 h-4 mr-2" />
           <a href={lead.website} target="_blank" rel="noopener noreferrer" className="text-blue-500 dark:text-blue-400 hover:underline truncate">
-            {lead.website}
+            {isFreelance ? 'Ver Vaga / Postagem' : lead.website}
           </a>
         </div>
         {lead.email && (
@@ -115,6 +118,28 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, onAnalyzeLead }) => {
           </div>
         )}
       </div>
+
+      {lead.socialMediaAnalysis && (
+        <div className={`mb-4 p-3 rounded-lg border flex flex-col gap-1 ${
+          lead.socialMediaAnalysis.quality === 'ruim' || lead.socialMediaAnalysis.quality === 'inexistente'
+          ? 'bg-red-50 border-red-100 dark:bg-red-900/20 dark:border-red-800'
+          : 'bg-slate-50 border-slate-100 dark:bg-slate-800/50 dark:border-slate-700'
+        }`}>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">Auditoria de Redes Sociais</span>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+              lead.socialMediaAnalysis.quality === 'ruim' || lead.socialMediaAnalysis.quality === 'inexistente'
+              ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
+              : 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'
+            }`}>
+              {lead.socialMediaAnalysis.quality}
+            </span>
+          </div>
+          <p className="text-xs text-slate-600 dark:text-slate-400 italic">
+            "{lead.socialMediaAnalysis.observations}"
+          </p>
+        </div>
+      )}
 
       {/* Social Media & WhatsApp Section */}
       <div className="flex flex-wrap gap-3 mb-6">

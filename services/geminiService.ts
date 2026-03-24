@@ -19,19 +19,35 @@ export async function prospectLeads(params: SearchParams, myCompany?: MyCompany)
   }
 
   const isProfessional = params.targetType === 'professionals';
-  const targetEntity = isProfessional ? 'profissionais (pessoas físicas, autônomos ou especialistas)' : 'empresas reais';
-  const targetRole = isProfessional ? 'especialista em recrutamento e prospecção de profissionais' : 'especialista em prospecção de vendas B2B';
-  const nameLabel = isProfessional ? 'Nome completo do profissional' : 'Nome completo da empresa';
-  const industryLabel = isProfessional ? 'Profissão / Especialidade' : 'Setor/Indústria';
-  const websiteLabel = isProfessional ? 'URL do Portfólio, LinkedIn ou Site' : 'URL do Website';
+  const isFreelance = params.targetType === 'freelance_opportunities';
+  
+  let targetEntity = 'empresas reais';
+  let targetRole = 'especialista em prospecção de vendas B2B';
+  let nameLabel = 'Nome completo da empresa';
+  let industryLabel = 'Setor/Indústria';
+  let websiteLabel = 'URL do Website';
+
+  if (isProfessional) {
+    targetEntity = 'profissionais (pessoas físicas, autônomos ou especialistas)';
+    targetRole = 'especialista em recrutamento e prospecção de profissionais';
+    nameLabel = 'Nome completo do profissional';
+    industryLabel = 'Profissão / Especialidade';
+    websiteLabel = 'URL do Portfólio, LinkedIn ou Site';
+  } else if (isFreelance) {
+    targetEntity = 'PESSOAS FÍSICAS, influenciadores, criadores de conteúdo ou pequenos empreendedores que estão buscando serviços (NÃO foque em grandes empresas, foque em indivíduos postando em redes sociais ou sites de freelancers)';
+    targetRole = 'especialista em encontrar indivíduos e criadores que precisam de ajuda imediata com serviços';
+    nameLabel = 'Nome do Contratante / Criador';
+    industryLabel = 'Serviço Solicitado';
+    websiteLabel = 'Link do Post ou Perfil';
+  }
 
   const prompt = `
     Atue como um ${targetRole}. 
     ${companyContext}Encontre até 50 ${targetEntity} (o máximo que conseguir sem exceder o tempo limite) que se encaixam neste critério:
-    Nicho/Profissão: ${params.niche}
+    Nicho/Serviço: ${params.niche}
     Localização: ${params.location}
     ${servicesContext}
-    Objetivo: Identificar leads qualificados para expansão de negócios ou parcerias.
+    ${isFreelance ? 'FOCO: Encontre postagens de PESSOAS REAIS (criadores, influencers, autônomos) em redes sociais ou fóruns que precisam de ' + params.niche + '. EVITE empresas corporativas, foque no contato direto com o indivíduo.' : 'Objetivo: Identificar leads qualificados para expansão de negócios ou parcerias.'}
     Seja extremamente conciso nas descrições e sugestões para uma resposta rápida e garanta que o JSON seja bem formatado.
 
     Para cada lead, forneça:
@@ -46,6 +62,7 @@ export async function prospectLeads(params: SearchParams, myCompany?: MyCompany)
     - Telefone fixo ou comercial (campo "phone").
     - Links para redes sociais (LinkedIn, Instagram, Facebook, Twitter) se disponíveis.
     - Número de WhatsApp (campo "whatsapp"): EXTREMAMENTE IMPORTANTE: Só preencha este campo se for um número de celular válido ou explicitamente listado como WhatsApp. No Brasil, celulares têm 9 dígitos após o DDD (ex: 11 9XXXX-XXXX). Inclua o código do país (ex: +55). Não coloque telefones fixos aqui. Se não tiver certeza, deixe em branco.
+    - Análise de Redes Sociais (campo "socialMediaAnalysis"): Avalie a qualidade da presença digital (especialmente Instagram). Se for ruim ou inexistente, destaque isso como uma oportunidade de serviço.
   `;
 
   try {
@@ -77,6 +94,17 @@ export async function prospectLeads(params: SearchParams, myCompany?: MyCompany)
                   email: { type: Type.STRING },
                   phone: { type: Type.STRING },
                   whatsapp: { type: Type.STRING },
+                  socialMediaAnalysis: {
+                    type: Type.OBJECT,
+                    properties: {
+                      quality: { 
+                        type: Type.STRING,
+                        description: "Qualidade da presença no Instagram/Redes Sociais: 'excelente', 'bom', 'regular', 'ruim' ou 'inexistente'"
+                      },
+                      observations: { type: Type.STRING, description: "Breve observação sobre o que falta ou o que está ruim." }
+                    },
+                    required: ["quality", "observations"]
+                  },
                   socialMedia: {
                     type: Type.OBJECT,
                     properties: {
@@ -123,7 +151,7 @@ export async function prospectLeads(params: SearchParams, myCompany?: MyCompany)
   }
 }
 
-export async function analyzeLeadOutreach(lead: Lead, myCompany?: MyCompany, isProfessional: boolean = false): Promise<string> {
+export async function analyzeLeadOutreach(lead: Lead, myCompany?: MyCompany, targetType?: string): Promise<string> {
   let companyContext = '';
   if (myCompany && myCompany.name && myCompany.industry) {
     companyContext = `Sua empresa, ${myCompany.name}, é da indústria de ${myCompany.industry}.`;
@@ -131,18 +159,21 @@ export async function analyzeLeadOutreach(lead: Lead, myCompany?: MyCompany, isP
     companyContext += ' ';
   }
 
-  const targetNameLabel = isProfessional ? 'Profissional' : 'Empresa';
-  const targetIndustryLabel = isProfessional ? 'Especialidade' : 'Indústria';
+  const isProfessional = targetType === 'professionals';
+  const isFreelance = targetType === 'freelance_opportunities';
+
+  const targetNameLabel = isFreelance ? 'Contratante' : (isProfessional ? 'Profissional' : 'Empresa');
+  const targetIndustryLabel = isFreelance ? 'Serviço Necessário' : (isProfessional ? 'Especialidade' : 'Indústria');
 
   const prompt = `Crie uma estratégia de abordagem (outreach) personalizada para o seguinte lead:
     ${targetNameLabel}: ${lead.name}
     ${targetIndustryLabel}: ${lead.industry}
     Descrição: ${lead.description}
-    Site/Portfólio: ${lead.website}
+    Site/Vaga: ${lead.website}
     ${lead.email ? `E-mail: ${lead.email}` : ''}
     ${lead.phone ? `Telefone: ${lead.phone}` : ''}
     
-    ${companyContext}A estratégia deve incluir um script de e-mail frio curto e um gancho para LinkedIn, incorporando os dados de contato disponíveis para personalização. A abordagem deve ser relevante para a sua empresa.`;
+    ${companyContext}A estratégia deve incluir um script de abordagem curto (pode ser para e-mail, LinkedIn ou WhatsApp), focando em como você pode resolver o problema específico do lead. ${isFreelance ? 'Como é uma vaga/projeto, foque em destacar suas habilidades relevantes.' : 'A abordagem deve ser relevante para a sua empresa.'}`;
 
   try {
     const response = await ai.models.generateContent({

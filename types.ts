@@ -18,6 +18,10 @@ export interface Lead {
     twitter?: string;
   };
   whatsapp?: string;
+  socialMediaAnalysis?: {
+    quality: 'excelente' | 'bom' | 'regular' | 'ruim' | 'inexistente';
+    observations: string;
+  };
 }
 
 export interface MyCompany {
@@ -28,7 +32,7 @@ export interface MyCompany {
 }
 
 export interface SearchParams {
-  targetType?: 'companies' | 'professionals';
+  targetType?: 'companies' | 'professionals' | 'freelance_opportunities';
   niche: string;
   location: string;
   country?: string;

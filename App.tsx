@@ -409,11 +409,11 @@ const App: React.FC = () => {
       {/* Hero Search Section */}
       <section className="bg-slate-900 dark:bg-slate-950 text-white py-16 px-4 transition-colors">
         <div className="max-w-4xl mx-auto text-center mb-10">
-          <h2 className="text-4xl font-extrabold mb-4">Encontre seus próximos clientes ideais</h2>
-          <p className="text-slate-400 text-lg">Use inteligência artificial avançada para prospectar empresas e criar estratégias de vendas em segundos.</p>
+          <h2 className="text-4xl font-extrabold mb-4">Encontre seus próximos clientes ou projetos</h2>
+          <p className="text-slate-400 text-lg">Use inteligência artificial avançada para prospectar empresas, profissionais ou oportunidades de trabalho freelance em segundos.</p>
           {myCompany?.name && (
             <p className="text-blue-300 text-md mt-4">
-              Gerando leads para: <span className="font-bold">{myCompany.name}</span> ({myCompany.industry})
+              Gerando oportunidades para: <span className="font-bold">{myCompany.name}</span> ({myCompany.industry})
             </p>
           )}
         </div>
@@ -421,20 +421,27 @@ const App: React.FC = () => {
         <div className="max-w-3xl mx-auto">
           <form onSubmit={handleSearch} className="glass-morphism bg-white/10 dark:bg-slate-900/50 p-2 rounded-2xl flex flex-col gap-2 shadow-2xl border border-white/10 dark:border-slate-800">
             {/* Target Type Selection */}
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-2 w-full max-w-md mx-auto">
+            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-2 w-full max-w-2xl mx-auto overflow-x-auto">
               <button
                 type="button"
                 onClick={() => setParams({...params, targetType: 'companies'})}
-                className={`flex-1 py-2 px-4 text-sm font-medium rounded-lg transition-all ${params.targetType === 'companies' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                className={`flex-1 py-2 px-4 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${params.targetType === 'companies' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
               >
                 Empresas (B2B)
               </button>
               <button
                 type="button"
                 onClick={() => setParams({...params, targetType: 'professionals'})}
-                className={`flex-1 py-2 px-4 text-sm font-medium rounded-lg transition-all ${params.targetType === 'professionals' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                className={`flex-1 py-2 px-4 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${params.targetType === 'professionals' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
               >
-                Profissionais / Pessoas
+                Profissionais
+              </button>
+              <button
+                type="button"
+                onClick={() => setParams({...params, targetType: 'freelance_opportunities'})}
+                className={`flex-1 py-2 px-4 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${params.targetType === 'freelance_opportunities' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              >
+                Pessoas / Criadores (Freelance)
               </button>
             </div>
 
@@ -444,7 +451,13 @@ const App: React.FC = () => {
                 <svg className="w-5 h-5 text-slate-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 <input 
                   type="text" 
-                  placeholder={params.targetType === 'professionals' ? "Qual profissão? (Ex: Arquitetos, Veterinários)" : "Qual nicho de empresa você procura?"}
+                  placeholder={
+                    params.targetType === 'freelance_opportunities' 
+                    ? "O que você faz? (Ex: Edição para YouTubers, Reels para Influencers)" 
+                    : params.targetType === 'professionals' 
+                      ? "Qual profissão? (Ex: Arquitetos, Veterinários)" 
+                      : "Qual nicho de empresa você procura?"
+                  }
                   className="w-full bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder-slate-400 text-sm py-2"
                   value={params.niche}
                   onChange={(e) => setParams({...params, niche: e.target.value})}
@@ -539,7 +552,11 @@ const App: React.FC = () => {
               <svg className="w-5 h-5 text-slate-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M6.343 17.657l-.707.707M18 10v4m-6-4v4m-6-4v4m14-4a2 2 0 11-4 0 2 2 0 014 0zM5.454 11.13A7 7 0 0112 4a7 7 0 016.546 7.13M12 17a7 7 0 01-7-7c0-3.866 3.134-7 7-7s7 3.134 7 7c0 3.866-3.134 7-7 7z"/></svg>
               <textarea
                 rows={2} // Use textarea for multi-line description
-                placeholder="Quais serviços sua empresa oferece? (Ex: Consultoria de marketing digital, desenvolvimento de software)"
+                placeholder={
+                  params.targetType === 'freelance_opportunities'
+                  ? "Descreva suas habilidades para a IA te ajudar a encontrar a vaga ideal (Ex: Sou editor de vídeo com 5 anos de experiência em Premiere e After Effects)"
+                  : "Quais serviços sua empresa oferece? (Ex: Consultoria de marketing digital, desenvolvimento de software)"
+                }
                 className="w-full bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white placeholder-slate-400 text-sm py-2 resize-y"
                 value={params.servicesOffered}
                 onChange={(e) => setParams({...params, servicesOffered: e.target.value})}
@@ -588,7 +605,12 @@ const App: React.FC = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {leads.map(lead => (
-                  <LeadCard key={lead.id} lead={lead} onAnalyzeLead={(l) => analyzeLeadOutreach(l, myCompany, params.targetType === 'professionals')} />
+                  <LeadCard 
+                    key={lead.id} 
+                    lead={lead} 
+                    onAnalyzeLead={(l) => analyzeLeadOutreach(l, myCompany, params.targetType)} 
+                    isFreelance={params.targetType === 'freelance_opportunities'}
+                  />
                 ))}
                 {leads.length === 0 && !loading && (
                   <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">

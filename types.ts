@@ -50,3 +50,12 @@ export interface GroundingSource {
   title: string;
   uri: string;
 }
+
+export interface CachedSearchItem {
+  id: string;
+  timestamp: number;
+  params: SearchParams;
+  leads: Lead[];
+  sources: any[];
+  label: string;
+}

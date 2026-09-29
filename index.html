@@ -112,18 +112,12 @@
             transition: width 0.1s linear;
         }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4",
-    "@google/genai": "https://esm.sh/@google/genai@^1.40.0",
-    "jspdf": "https://esm.sh/jspdf@^2.5.1"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
+    <script>
+        // Polyfill environment for browsers and static hosting platforms (Netlify, Vercel, etc.)
+        window.global = window.global || window;
+        window.process = window.process || { env: { NODE_ENV: 'production' } };
+    </script>
+    <link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
     <div id="root"></div>
